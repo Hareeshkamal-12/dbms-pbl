@@ -3,6 +3,7 @@ import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
+import { spawn, ChildProcess } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,6 +14,80 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 app.use(express.json());
 // Serve static directory directly
 app.use('/static', express.static(path.resolve(__dirname, 'static')));
+
+// =====================================================================
+// FLASK BACKEND SUPERVISOR & REVERSE PROXY
+// =====================================================================
+const FLASK_PORT = 5001;
+let flaskProcess: ChildProcess | null = null;
+
+function ensureFlaskRunning() {
+  if (flaskProcess && !flaskProcess.killed && flaskProcess.exitCode === null) return;
+  try {
+    console.log(`[Supervisor] Spawning Python Flask REST API (app.py) on port ${FLASK_PORT}...`);
+    flaskProcess = spawn('python3', ['app.py'], {
+      env: { ...process.env, PORT: String(FLASK_PORT), PYTHONUNBUFFERED: '1' },
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+
+    flaskProcess.stdout?.on('data', (d) => {
+      console.log(`[Flask stdout] ${d.toString().trim()}`);
+    });
+    flaskProcess.stderr?.on('data', (d) => {
+      console.log(`[Flask stderr] ${d.toString().trim()}`);
+    });
+    flaskProcess.on('exit', (code) => {
+      console.log(`[Flask] Process exited with code ${code}.`);
+      flaskProcess = null;
+    });
+  } catch (err) {
+    console.error('[Flask] Failed to spawn Flask process:', err);
+  }
+}
+
+// Start Flask process on server startup
+ensureFlaskRunning();
+
+// Proxy /api requests to the real Python Flask server
+app.use('/api', async (req: Request, res: Response, next: NextFunction) => {
+  ensureFlaskRunning();
+  try {
+    const targetUrl = `http://127.0.0.1:${FLASK_PORT}${req.originalUrl}`;
+    const headers: Record<string, string> = {};
+    for (const [key, value] of Object.entries(req.headers)) {
+      if (key !== 'host' && typeof value === 'string') {
+        headers[key] = value;
+      }
+    }
+
+    const options: RequestInit = {
+      method: req.method,
+      headers
+    };
+
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method) && req.body && Object.keys(req.body).length > 0) {
+      headers['content-type'] = 'application/json';
+      options.body = JSON.stringify(req.body);
+    }
+
+    const flaskRes = await fetch(targetUrl, options);
+
+    const setCookie = flaskRes.headers.get('set-cookie');
+    if (setCookie) {
+      res.setHeader('Set-Cookie', setCookie);
+    }
+
+    const contentType = flaskRes.headers.get('content-type') || 'application/json';
+    res.status(flaskRes.status);
+    res.setHeader('Content-Type', contentType);
+
+    const bodyText = await flaskRes.text();
+    return res.send(bodyText);
+  } catch (err) {
+    // If Flask is starting up, proceed to express fallback
+    return next();
+  }
+});
 
 // In-Memory Data Storage (Mirrors MySQL schema)
 interface User {
