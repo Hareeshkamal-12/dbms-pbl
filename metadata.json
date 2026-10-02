@@ -1,0 +1,8 @@
+{
+  "name": "Student Information Portal",
+  "description": "Comprehensive student portal for managing academic records, attendance tracking, and grade reports with spatial liquid-glass design.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

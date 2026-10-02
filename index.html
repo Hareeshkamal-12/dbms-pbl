@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Information Portal</title>
+  <meta name="description" content="Comprehensive student portal for managing academic records, attendance tracking, and grade reports with spatial liquid-glass design." />
+  <meta property="og:title" content="Student Information Portal" />
+  <meta property="og:description" content="Comprehensive student portal for managing academic records, attendance tracking, and grade reports with spatial liquid-glass design." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Google Font: Manrope -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body class="theme-dark">
+  <!-- Drifting Ambient Blurred Gradient Orbs -->
+  <div class="ambient-canvas" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="ambient-grid"></div>
+  </div>
+
+  <!-- Toast Notification System -->
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ================================================================= -->
+  <!-- AUTHENTICATION CONTAINER (Visible when not logged in)             -->
+  <!-- ================================================================= -->
+  <div id="authView" class="auth-wrapper">
+    <div class="auth-card liquid-panel" data-tilt-panel>
+      <div class="auth-brand">
+        <div class="brand-icon-box">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+          </svg>
+        </div>
+        <div class="auth-brand-text">
+          <h1 class="brand-title">Student Portal</h1>
+          <p class="brand-subtitle">Academic Intelligence & Records</p>
+        </div>
+      </div>
+
+      <!-- Segmented Auth Mode Switcher -->
+      <div class="auth-segmented-switch">
+        <button type="button" id="tabSignIn" class="auth-tab active" onclick="switchAuthMode('signin')">Sign In</button>
+        <button type="button" id="tabRegister" class="auth-tab" onclick="switchAuthMode('register')">Create Account</button>
+      </div>
+
+      <!-- Auth Form -->
+      <form id="authForm" onsubmit="handleAuthSubmit(event)">
+        <div class="form-group">
+          <label for="authUsername" class="form-label">Username</label>
+          <div class="input-wrapper">
+            <span class="input-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </span>
+            <input 
+              type="text" 
+              id="authUsername" 
+              class="form-input" 
+              placeholder="Enter username (min. 3 characters)" 
+              required 
+              autocomplete="username" 
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="authPassword" class="form-label">Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </span>
+            <input 
+              type="password" 
+              id="authPassword" 
+              class="form-input" 
+              placeholder="Enter password (min. 6 characters)" 
+              required 
+              autocomplete="current-password" 
+            />
+          </div>
+          <span id="passwordHint" class="form-hint hidden">Must be at least 6 characters long.</span>
+        </div>
+
+        <!-- Role Select for Register Mode -->
+        <div class="form-group hidden" id="authRoleGroup">
+          <label for="authRoleSelect" class="form-label">Desired Portal Role</label>
+          <div class="select-wrapper">
+            <select id="authRoleSelect" class="form-select">
+              <option value="student">🎓 Student (Personal ID, Attendance & Official Report Card)</option>
+              <option value="teacher">🍎 Faculty Teacher (Attendance Workstation, Gradebook & Alerts)</option>
+              <option value="admin">👑 Administrator (Full Admissions, Curriculum & Accounts)</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" id="authSubmitBtn" class="btn-gradient-pill w-full">
+          <span id="authSubmitLabel">Sign In</span>
+          <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </form>
+
+      <!-- Tap to Fill Demo Accounts with 3 Distinct Roles -->
+      <div class="demo-accounts-tray">
+        <span class="demo-tray-label">Tap to experience each unique role:</span>
+        <div class="demo-pills">
+          <button type="button" class="demo-pill" onclick="fillDemo('admin', 'admin123')">
+            <span class="role-dot dot-admin"></span>
+            <strong>admin</strong> · 👑 Administrator (Admissions & Curriculum)
+          </button>
+          <button type="button" class="demo-pill" onclick="fillDemo('teacher', 'teacher123')">
+            <span class="role-dot dot-teacher"></span>
+            <strong>teacher</strong> · 🍎 Faculty (Attendance, Gradebook & Alerts)
+          </button>
+          <button type="button" class="demo-pill" onclick="fillDemo('demo', 'demo123')">
+            <span class="role-dot dot-demo"></span>
+            <strong>demo</strong> · 🎓 Student (Report Card, Eligibility & Excuses)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MAIN APPLICATION SHELL (Visible when authenticated)               -->
+  <!-- ================================================================= -->
+  <div id="appShell" class="app-layout hidden">
+    <!-- Mobile Top Navigation Header -->
+    <header class="mobile-header liquid-panel">
+      <div class="brand-lockup">
+        <div class="brand-icon-mini">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+          </svg>
+        </div>
+        <span class="mobile-brand-title">Academix Portal</span>
+      </div>
+      <button type="button" id="mobileMenuBtn" class="icon-button" aria-label="Toggle Navigation Menu" onclick="toggleMobileNav()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Desktop Glass Left Sidebar -->
+    <aside id="mainSidebar" class="sidebar liquid-panel" data-tilt-panel>
+      <!-- Sidebar Header -->
+      <div class="sidebar-header">
+        <div class="brand-badge">
+          <div class="brand-badge-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+            </svg>
+          </div>
+          <div>
+            <span class="brand-title-nav">Academix</span>
+            <span class="brand-sub-nav" id="sidebarSubNav">Portal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Links (Dynamic per role) -->
+      <nav class="sidebar-nav" id="sidebarNav" aria-label="Main Navigation">
+        <!-- 1. ADMIN SPECIFIC NAVIGATION -->
+        <div id="navGroupAdmin" class="nav-role-group">
+          <span class="nav-section-label">ADMINISTRATION</span>
+          <button type="button" class="nav-item active" data-tab="dashboard" onclick="navigateToTab('dashboard')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <span>Overview KPIs</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="students" onclick="navigateToTab('students')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>Student Admissions</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="subjects" onclick="navigateToTab('subjects')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            <span>Curriculum & Subjects</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="users" onclick="navigateToTab('users')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="8.5" cy="7" r="4"></circle>
+              <line x1="20" y1="8" x2="20" y2="14"></line>
+              <line x1="23" y1="11" x2="17" y2="11"></line>
+            </svg>
+            <span>User Accounts & RBAC</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="attendance" onclick="navigateToTab('attendance')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>Attendance Oversight</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="grades" onclick="navigateToTab('grades')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span>Examination Archive</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="setup" onclick="navigateToTab('setup')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+            <span>Setup & Architecture</span>
+          </button>
+        </div>
+
+        <!-- 2. TEACHER SPECIFIC NAVIGATION -->
+        <div id="navGroupTeacher" class="nav-role-group hidden">
+          <span class="nav-section-label">FACULTY WORKSPACE</span>
+          <button type="button" class="nav-item active" data-tab="teacherHub" onclick="navigateToTab('teacherHub')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+            <span>Faculty Hub</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="attendance" onclick="navigateToTab('attendance')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+              <path d="m9 16 2 2 4-4"></path>
+            </svg>
+            <span>Daily Attendance</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="grades" onclick="navigateToTab('grades')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span>Gradebook & Remarks</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="students" onclick="navigateToTab('students')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+            </svg>
+            <span>Class Roster</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="leaveReview" onclick="navigateToTab('leaveReview')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Absence Notes Review</span>
+          </button>
+        </div>
+
+        <!-- 3. STUDENT SPECIFIC NAVIGATION -->
+        <div id="navGroupStudent" class="nav-role-group hidden">
+          <span class="nav-section-label">STUDENT DESK</span>
+          <button type="button" class="nav-item active" data-tab="studentPortal" onclick="navigateToTab('studentPortal')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+            </svg>
+            <span>Academic ID Card</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="studentAttendance" onclick="navigateToTab('studentAttendance')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>Attendance & Eligibility</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="studentReportCard" onclick="navigateToTab('studentReportCard')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span>Official Report Card</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="studentLeave" onclick="navigateToTab('studentLeave')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+            <span>Submit Absence Excuse</span>
+          </button>
+          <button type="button" class="nav-item" data-tab="studentCourses" onclick="navigateToTab('studentCourses')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            <span>Enrolled Subjects</span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- User Profile Card in Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="user-card">
+          <div class="user-avatar" id="userAvatar">A</div>
+          <div class="user-meta">
+            <span class="user-name" id="userDisplayName">Signed in</span>
+            <span class="user-role-badge badge-role-admin" id="userRoleBadge">Administrator</span>
+          </div>
+          <button type="button" class="icon-button-subtle" onclick="handleLogout()" title="Sign out" aria-label="Sign out">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Viewport Content Area -->
+    <main class="main-viewport" id="mainContent">
+      <!-- Universal Role Persona Switcher Banner -->
+      <div class="role-workspace-strip liquid-panel" id="roleWorkspaceStrip">
+        <div class="role-strip-info">
+          <span class="role-indicator-chip role-chip-admin" id="currentRoleChip">👑 Administrator</span>
+          <span class="role-desc-text" id="roleDutyDescription">Managing Student Admissions, Curriculum Offerings & System Operations</span>
+        </div>
+        <div class="role-switch-buttons">
+          <span class="switch-prompt">Switch Persona:</span>
+          <button type="button" class="btn-role-quick" id="btnSwitchAdmin" onclick="quickSwitchRole('admin')" title="Switch to Admin">👑 Admin</button>
+          <button type="button" class="btn-role-quick" id="btnSwitchTeacher" onclick="quickSwitchRole('teacher')" title="Switch to Teacher">🍎 Teacher</button>
+          <button type="button" class="btn-role-quick" id="btnSwitchStudent" onclick="quickSwitchRole('demo')" title="Switch to Student">🎓 Student</button>
+        </div>
+      </div>
+
+      <!-- ============================================================= -->
+      <!-- TAB: DASHBOARD VIEW (Admin Institutional Overview)            -->
+      <!-- ============================================================= -->
+      <section id="tabViewDashboard" class="tab-pane active" aria-labelledby="dashHeading">
+        <div class="view-header">
+          <div>
+            <h2 id="dashHeading" class="view-title">Institutional Overview</h2>
+            <p class="view-desc">Executive metrics, total admissions, school-wide presence, and academic leaderboard.</p>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="btn-secondary-glass" onclick="openAddStudentModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Enroll Student</span>
+            </button>
+            <button type="button" class="btn-gradient-pill" onclick="openAddSubjectModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>New Subject</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3D Spatial Perspective Stat Cards Grid -->
+        <div class="spatial-stats-grid" id="statsGrid">
+          <div class="stat-card liquid-panel" data-tilt-card>
+            <div class="stat-glow glow-blue"></div>
+            <div class="stat-card-inner">
+              <div class="stat-header">
+                <span class="stat-label">Total Enrolled</span>
+                <div class="stat-icon-wrapper blue-tint">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value-box">
+                <span class="stat-number tabular-nums" id="statTotalStudents">0</span>
+                <span class="stat-badge-text">Registered students</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card liquid-panel" data-tilt-card>
+            <div class="stat-glow glow-emerald"></div>
+            <div class="stat-card-inner">
+              <div class="stat-header">
+                <span class="stat-label">Present Today</span>
+                <div class="stat-icon-wrapper emerald-tint">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value-box">
+                <span class="stat-number tabular-nums" id="statPresentToday">0</span>
+                <span class="stat-badge-text" id="statPresentRatio">Active today</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card liquid-panel" data-tilt-card>
+            <div class="stat-glow glow-violet"></div>
+            <div class="stat-card-inner">
+              <div class="stat-header">
+                <span class="stat-label">Attendance Rate</span>
+                <div class="stat-icon-wrapper violet-tint">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value-box">
+                <div class="flex items-baseline gap-1">
+                  <span class="stat-number tabular-nums" id="statAttendanceRate">0.0</span>
+                  <span class="stat-unit">%</span>
+                </div>
+                <span class="stat-badge-text">Weighted academic average</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card liquid-panel" data-tilt-card>
+            <div class="stat-glow glow-amber"></div>
+            <div class="stat-card-inner">
+              <div class="stat-header">
+                <span class="stat-label">Average Score</span>
+                <div class="stat-icon-wrapper amber-tint">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value-box">
+                <div class="flex items-baseline gap-1">
+                  <span class="stat-number tabular-nums" id="statAverageGrade">0.0</span>
+                  <span class="stat-unit">%</span>
+                </div>
+                <span class="stat-badge-text">Across all completed exams</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top 5 Students Leaderboard -->
+        <div class="dashboard-bottom-grid">
+          <div class="leaderboard-panel liquid-panel" data-tilt-panel>
+            <div class="panel-header-row">
+              <div>
+                <h3 class="panel-heading">Top Performing Scholars</h3>
+                <p class="panel-desc">Ranked by weighted examination percentage.</p>
+              </div>
+              <span class="panel-pill-badge">Term Fall 2024</span>
+            </div>
+            <div class="leaderboard-list" id="topStudentsList"></div>
+          </div>
+
+          <!-- Institutional Quick Actions -->
+          <div class="liquid-panel setup-panel" data-tilt-panel style="padding: 24px;">
+            <h3 class="panel-heading" style="margin-bottom: 14px;">Administrator Control Center</h3>
+            <p class="panel-desc" style="margin-bottom: 20px;">Direct access to core institutional workflows:</p>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <button type="button" class="btn-secondary-glass w-full" onclick="navigateToTab('students')">
+                👥 Manage Student Enrollments & Records
+              </button>
+              <button type="button" class="btn-secondary-glass w-full" onclick="navigateToTab('subjects')">
+                📚 Manage Curriculum Courses & Subjects
+              </button>
+              <button type="button" class="btn-secondary-glass w-full" onclick="navigateToTab('users')">
+                👤 View System Users & Role Assignments
+              </button>
+              <button type="button" class="btn-secondary-glass w-full" onclick="navigateToTab('setup')">
+                ⚙️ Database Schema & System Architecture
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================= -->
+      <!-- TAB: TEACHER HUB (Teacher's Daily Workstation)                -->
+      <!-- ============================================================= -->
+      <section id="tabViewTeacherHub" class="tab-pane hidden" aria-labelledby="teacherHubHeading">
+        <div class="view-header">
+          <div>
+            <h2 id="teacherHubHeading" class="view-title">Faculty Teaching Station</h2>
+            <p class="view-desc">Today's roll call, attendance alerts, students needing academic intervention, and quick grade entries.</p>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="btn-secondary-glass" onclick="openAddGradeModal()">
+              ✍️ Record Exam Grade
+            </button>
+            <button type="button" class="btn-gradient-pill" onclick="navigateToTab('attendance')">
+              📋 Mark Today's Roll Call
+            </button>
+          </div>
+        </div>
+
+        <!-- Today's Attendance Progress Banner -->
+        <div class="liquid-panel" style="padding: 20px; margin-bottom: 24px; border-left: 4px solid #10b981;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+            <div>
+              <h3 style="font-size: 16px; font-weight: 700; color: #ffffff;">Today's Attendance Status</h3>
+              <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;" id="teacherAttendanceStatusText">
+                Checking today's classroom presence...
+              </p>
+            </div>
+            <button type="button" class="btn-gradient-pill btn-sm" onclick="navigateToTab('attendance')">
+              Open Daily Attendance Sheet
+            </button>
+          </div>
+        </div>
+
+        <!-- Two Alert Cards: Attendance Warnings & Academic Performance Alerts -->
+        <div class="teacher-overview-grid">
+          <!-- Card 1: Attendance Shortage (<75%) -->
+          <div class="teacher-alert-panel liquid-panel" data-tilt-panel>
+            <div class="panel-header-with-badge">
+              <h3 class="panel-subheading">
+                <span>⚠️ Attendance Warnings</span>
+              </h3>
+              <span class="badge-alert-count badge-alert-warning" id="attAlertsCount">0 Students</span>
+            </div>
+            <p class="panel-desc" style="margin-bottom: 14px;">Students below the mandatory 75% attendance threshold (At risk of exam debarment):</p>
+            <div class="alert-list" id="attendanceAlertsList">
+              <div class="alert-empty-good">
+                <span>✅ All students currently meet the 75% attendance requirement.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Academic Alerts (<60%) -->
+          <div class="teacher-alert-panel liquid-panel" data-tilt-panel>
+            <div class="panel-header-with-badge">
+              <h3 class="panel-subheading">
+                <span>📉 Academic Performance Alerts</span>
+              </h3>
+              <span class="badge-alert-count badge-alert-danger" id="academicAlertsCount">0 Students</span>
+            </div>
+            <p class="panel-desc" style="margin-bottom: 14px;">Students averaging below 60% across assessments (Academic intervention advised):</p>
+            <div class="alert-list" id="academicAlertsList">
+              <div class="alert-empty-good">
+                <span>✅ All students maintain passing academic averages.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Evaluations Logged by Faculty -->
+        <div class="liquid-panel" style="padding: 24px;">
+          <div class="panel-header-row">
+            <div>
+              <h3 class="panel-heading">Recent Assessment Scores & Feedback</h3>
+              <p class="panel-desc">Latest student evaluation entries with teacher remarks.</p>
+            </div>
+            <button type="button" class="btn-secondary-glass btn-sm" onclick="openAddGradeModal()">+ Log Score</button>
+          </div>
+          <div class="table-container" style="box-shadow: none; border: none; margin-top: 16px;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Subject</th>
+                  <th>Assessment</th>
+                  <th>Percentage</th>
+                  <th>Teacher Remarks</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="teacherRecentGradesBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================= -->
+      <!-- TAB: STUDENT PORTAL (Student Academic ID & Home)              -->
+      <!-- ============================================================= -->
+      <section id="tabViewStudentPortal" class="tab-pane hidden" aria-labelledby="studentPortalHeading">
+        <div class="view-header">
+          <div>
+            <h2 id="studentPortalHeading" class="view-title">My Academic Portal</h2>
+            <p class="view-desc">Personal student identification, enrollment credentials, and academic standing.</p>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="btn-secondary-glass" onclick="navigateToTab('studentLeave')">
+              📝 Submit Leave Note
+            </button>
+            <button type="button" class="btn-gradient-pill" onclick="navigateToTab('studentReportCard')">
+              📜 View Report Card
+            </button>
+          </div>
+        </div>
+
+        <!-- Official Student ID Badge Hero Banner -->
+        <div class="student-hero-banner liquid-panel" data-tilt-panel>
+          <div class="student-hero-main">
+            <div class="student-large-avatar" id="studentHeroAvatar">A</div>
+            <div class="student-hero-info">
+              <h3 id="studentHeroName">Aiden Vance</h3>
+              <p class="student-hero-sub" id="studentHeroRollClass">Roll No: CS-2024-001 · Grade 11-A</p>
+              <div class="student-hero-pills">
+                <span class="student-hero-pill" style="background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.3);">
+                  Active Enrollment
+                </span>
+                <span class="student-hero-pill" id="studentEligibilityPill">
+                  ✅ Exam Eligible
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="student-meta-grid">
+            <div class="student-meta-item">
+              <span class="student-meta-label">Email Address</span>
+              <span class="student-meta-val" id="studentHeroEmail">aiden.vance@academy.edu</span>
+            </div>
+            <div class="student-meta-item">
+              <span class="student-meta-label">Phone Contact</span>
+              <span class="student-meta-val" id="studentHeroPhone">+1 (555) 234-5678</span>
+            </div>
+            <div class="student-meta-item">
+              <span class="student-meta-label">Date of Birth</span>
+              <span class="student-meta-val" id="studentHeroDob">2008-04-12</span>
+            </div>
+            <div class="student-meta-item">
+              <span class="student-meta-label">Academic Status</span>
+              <span class="student-meta-val" style="color: #6ee7b7;">Good Standing</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Student 4 Key Academic Indicators -->
+        <div class="spatial-stats-grid">
+          <div class="stat-card liquid-panel" data-tilt-card>
+            <div class="stat-glow glow-blue"></div>
+            <div class="stat-card-inner">
+              <div class="stat-header">
+                <span class="stat-label">Attendance Rate</span>
+                <div class="stat-icon-wrapper blue-tint">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value-box">
+                <div class="flex items-baseline gap-1">
+                  <span class="stat-number tabular-nums" id="studentStatAttRate">0.0</span>
+                  <span class="stat-unit">%</span>
+                </div>
+                <span class="stat-badge-text" id="studentStatAttDays">0 sessions logged</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card liquid-panel" data-tilt-card>
+            <div class="stat-glow glow-violet"></div>
+            <div class="stat-card-inner">
+              <div class="stat-header">
+                <span class="stat-label">Cumulative GPA %</span>
+                <div class="stat-icon-wrapper violet-tint">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value-box">
+                <div class="flex items-baseline gap-1">
+                  <span class="stat-number tabular-nums" id="studentStatGpa">0.0</span>
+                  <span class="stat-unit">%</span>
+                </div>
+                <span class="stat-badge-text" id="studentStatGradeLetter">Grade: A+</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card liquid-panel" data-tilt-card>
+            <div class="stat-glow glow-emerald"></div>
+            <div class="stat-card-inner">
+              <div class="stat-header">
+                <span class="stat-label">Exams Completed</span>
+                <div class="stat-icon-wrapper emerald-tint">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value-box">
+                <span class="stat-number tabular-nums" id="studentStatExamCount">0</span>
+                <span class="stat-badge-text">Evaluated assessments</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card liquid-panel" data-tilt-card>
+            <div class="stat-glow glow-amber"></div>
+            <div class="stat-card-inner">
+              <div class="stat-header">
+                <span class="stat-label">Term Exam Status</span>
+                <div class="stat-icon-wrapper amber-tint">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-value-box">
+                <span class="stat-number" style="font-size: 20px; color: #6ee7b7;" id="studentStatExamDebar">Eligible</span>
+                <span class="stat-badge-text">&gt; 75% attendance recorded</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Student Quick Navigation Buttons -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 24px;">
+          <div class="liquid-panel" style="padding: 20px; cursor: pointer;" onclick="navigateToTab('studentAttendance')">
+            <h4 style="font-size: 15px; font-weight: 700; color: #ffffff;">📅 View Detailed Attendance</h4>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Track daily presence, late marks, and monthly calendar.</p>
+          </div>
+          <div class="liquid-panel" style="padding: 20px; cursor: pointer;" onclick="navigateToTab('studentReportCard')">
+            <h4 style="font-size: 15px; font-weight: 700; color: #ffffff;">📜 View Official Transcript</h4>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Download and print your formal subject report card.</p>
+          </div>
+          <div class="liquid-panel" style="padding: 20px; cursor: pointer;" onclick="navigateToTab('studentLeave')">
+            <h4 style="font-size: 15px; font-weight: 700; color: #ffffff;">📝 Submit Absence Note</h4>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Request sick leave or submit doctor's notes to faculty.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================= -->
+      <!-- TAB: STUDENT ATTENDANCE & ELIGIBILITY                         -->
+      <!-- ============================================================= -->
+      <section id="tabViewStudentAttendance" class="tab-pane hidden" aria-labelledby="studentAttHeading">
+        <div class="view-header">
+          <div>
+            <h2 id="studentAttHeading" class="view-title">My Attendance & Exam Eligibility</h2>
+            <p class="view-desc">Monitor your physical class presence against the 75% examination eligibility benchmark.</p>
+          </div>
+        </div>
+
+        <div class="attendance-summary-strip liquid-panel" style="margin-bottom: 24px;">
+          <div class="summary-pill">
+            <span class="status-indicator-dot dot-present"></span>
+            <span>Total Presents: <strong id="studentAttCountPresent">0</strong></span>
+          </div>
+          <div class="summary-pill">
+            <span class="status-indicator-dot dot-late"></span>
+            <span>Total Lates: <strong id="studentAttCountLate">0</strong></span>
+          </div>
+          <div class="summary-pill">
+            <span class="status-indicator-dot dot-absent"></span>
+            <span>Total Absents: <strong id="studentAttCountAbsent">0</strong></span>
+          </div>
+          <div class="summary-pill ml-auto">
+            <span>Overall Rate: <strong id="studentAttRateBanner">0.0%</strong></span>
+          </div>
+        </div>
+
+        <div class="table-container liquid-panel">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date of Session</th>
+                <th>Academic Status</th>
+                <th>Verification</th>
+              </tr>
+            </thead>
+            <tbody id="studentAttendanceTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============================================================= -->
+      <!-- TAB: STUDENT REPORT CARD & TRANSCRIPT                         -->
+      <!-- ============================================================= -->
+      <section id="tabViewStudentReportCard" class="tab-pane hidden" aria-labelledby="reportCardHeading">
+        <div class="view-header">
+          <div>
+            <h2 id="reportCardHeading" class="view-title">Official Academic Transcript</h2>
+            <p class="view-desc">Verified term report card with subject evaluations, teacher feedback, and cumulative standing.</p>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="btn-gradient-pill" onclick="window.print()">
+              🖨️ Print Transcript
+            </button>
+          </div>
+        </div>
+
+        <div class="transcript-card liquid-panel" id="printableTranscript">
+          <div class="transcript-header">
+            <div class="transcript-institution">
+              <div class="transcript-seal">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                  <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                </svg>
+              </div>
+              <div>
+                <div class="institution-name">Academix Academy of Sciences</div>
+                <div class="institution-sub">Department of Academic Records & Examination Council</div>
+              </div>
+            </div>
+            <div class="transcript-meta-box">
+              <div class="transcript-doc-title">Official Term Transcript</div>
+              <div class="transcript-date" id="transcriptDateGenerated">Generated: Fall 2024</div>
+            </div>
+          </div>
+
+          <div class="transcript-student-details">
+            <div>
+              <span class="student-meta-label">Student Scholar</span>
+              <div class="student-meta-val" id="transcriptStudentName">Aiden Vance</div>
+            </div>
+            <div>
+              <span class="student-meta-label">Roll Number</span>
+              <div class="student-meta-val" id="transcriptRollNo">CS-2024-001</div>
+            </div>
+            <div>
+              <span class="student-meta-label">Grade / Class</span>
+              <div class="student-meta-val" id="transcriptClass">Grade 11-A</div>
+            </div>
+            <div>
+              <span class="student-meta-label">Academic Status</span>
+              <div class="student-meta-val" style="color: #6ee7b7;">Matriculated · Active</div>
+            </div>
+          </div>
+
+          <div class="table-container" style="box-shadow: none; border: 1px solid rgba(255,255,255,0.08); background: transparent;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Subject Course</th>
+                  <th>Assessment Title</th>
+                  <th>Marks Scored</th>
+                  <th>Percentage</th>
+                  <th>Letter Grade</th>
+                  <th>Faculty Feedback / Remarks</th>
+                </tr>
+              </thead>
+              <tbody id="transcriptGradesBody"></tbody>
+            </table>
+          </div>
+
+          <div class="transcript-grade-summary">
+            <div>
+              <span style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim);">Cumulative Performance Average</span>
+              <div class="summary-score-group">
+                <span class="summary-gpa-val" id="transcriptCumulativeAvg">94.5%</span>
+                <span class="summary-letter-badge grade-a" id="transcriptCumulativeLetter">A+</span>
+              </div>
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted); text-align: right;">
+              <div>Certified by Faculty Examination Board</div>
+              <div style="color: #6ee7b7; margin-top: 4px;">Official Digital Verification Verified ✓</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================= -->
+      <!-- TAB: STUDENT ABSENCE EXCUSE & LEAVE REQUEST                   -->
+      <!-- ============================================================= -->
+      <section id="tabViewStudentLeave" class="tab-pane hidden" aria-labelledby="studentLeaveHeading">
+        <div class="view-header">
+          <div>
+            <h2 id="studentLeaveHeading" class="view-title">Absence Excuse & Leave Request</h2>
+            <p class="view-desc">Submit formal absence notifications and medical excuse notes to faculty.</p>
+          </div>
+        </div>
+
+        <div class="leave-grid">
+          <!-- Submit Form -->
+          <div class="liquid-panel" style="padding: 24px;" data-tilt-panel>
+            <h3 class="panel-heading" style="margin-bottom: 12px;">Submit Excuse Note</h3>
+            <p class="panel-desc" style="margin-bottom: 18px;">Your request will be delivered to your instructors for review.</p>
+
+            <form id="studentLeaveForm" onsubmit="handleStudentLeaveSubmit(event)">
+              <div class="form-group">
+                <label for="leaveDateInput" class="form-label">Date of Absence <span class="required">*</span></label>
+                <input type="date" id="leaveDateInput" class="form-input" required />
+              </div>
+
+              <div class="form-group">
+                <label for="leaveReasonInput" class="form-label">Explanation / Reason <span class="required">*</span></label>
+                <textarea id="leaveReasonInput" class="form-input" rows="4" placeholder="e.g. Medical doctor consultation for seasonal flu..." required style="resize: vertical;"></textarea>
+              </div>
+
+              <button type="submit" id="btnSubmitLeave" class="btn-gradient-pill w-full">
+                Submit Note to Faculty
+              </button>
+            </form>
+          </div>
+
+          <!-- My Submissions History -->
+          <div class="liquid-panel" style="padding: 24px;" data-tilt-panel>
+            <h3 class="panel-heading" style="margin-bottom: 12px;">My Excuse Submissions</h3>
+            <p class="panel-desc" style="margin-bottom: 18px;">Track faculty review status for submitted notes:</p>
+            <div class="table-container" style="box-shadow: none; border: 1px solid rgba(255,255,255,0.08); background: transparent;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Reviewed By</th>
+                  </tr>
+                </thead>
+                <tbody id="studentLeavesTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================= -->
+      <!-- TAB: STUDENT COURSES & SYLLABUS                               -->
+      <!-- ============================================================= -->
+      <section id="tabViewStudentCourses" class="tab-pane hidden" aria-labelledby="studentCoursesHeading">
+        <div class="view-header">
+          <div>
+            <h2 id="studentCoursesHeading" class="view-title">Enrolled Courses & Curriculum</h2>
+            <p class="view-desc">Curriculum subjects registered for your academic program.</p>
+          </div>
+        </div>
+        <div class="grid-2-cols" id="studentCoursesGrid"></div>
+      </section>
+
+      <!-- ============================================================= -->
+      <!-- TAB: STUDENTS DIRECTORY (Admin Admissions / Teacher Roster)   -->
+      <!-- ============================================================= -->
+      <section id="tabViewStudents" class="tab-pane hidden" aria-labelledby="studentsHeading">
+        <div class="view-header">
+          <div>
+            <h2 id="studentsHeading" class="view-title">Student Admissions Directory</h2>
+            <p class="view-desc" id="studentsSubDesc">Manage enrollments, update academic profiles, or search student roster.</p>
+          </div>
+          <div class="header-actions" id="adminStudentActions">
+            <button type="button" class="btn-gradient-pill" onclick="openAddStudentModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Enroll Student</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Search Strip -->
+        <div class="search-strip liquid-panel">
+          <div class="search-box-wrapper">
+            <span class="search-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </span>
+            <input 
+              type="text" 
+              id="studentSearchInput" 
+              class="form-input search-input" 
+              placeholder="Search by name, roll number, or class grade..." 
+              oninput="handleStudentSearch(this.value)"
+            />
+            <button type="button" id="clearSearchBtn" class="clear-search-btn hidden" onclick="clearStudentSearch()" aria-label="Clear Search">
+              ✕
+            </button>
+          </div>
+          <div class="student-count-indicator">
+            <span id="studentCountBadge">0 students</span>
+          </div>
+        </div>
+
+        <!-- Student Table -->
+        <div class="table-container liquid-panel">
+          <table class="data-table" aria-label="Students Directory Table">
+            <thead>
+              <tr>
+                <th scope="col">Roll Number</th>
+                <th scope="col">Student Name</th>
+                <th scope="col">Class / Grade</th>
+                <th scope="col">Email Address</th>
+                <th scope="col">Phone</th>
+                <th scope="col">Date of Birth</th>
+                <th scope="col" class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="studentsTableBody"></tbody>
+          </table>
+
+          <div id="studentsEmptyState" class="empty-state-box hidden">
+            <h4 class="empty-state-title">No Students Found</h4>
+            <p class="empty-state-desc" id="studentsEmptyDesc">There are currently no students registered in the database.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================= -->
+      <!-- TAB: CURRICULUM & SUBJECTS (Admin Only)                       -->
+      <!-- ============================================================= -->
+      <section id="tabViewSubjects" class="tab-pane hidden" aria-labelledby="subjectsHeading">
+        <div class="view-header">
+          <div>
+            <h2 id="subjectsHeading" class="view-title">Curriculum & Subjects Management</h2>
+            <p class="view-desc">Define academic courses, add new offerings, and organize department curricula.</p>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="btn-gradient-pill" onclick="openAddSubjectModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Add Subject to Curriculum</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-container liquid-panel">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Subject ID</th>
+                <th>Subject Name</th>
+                <th>Curriculum Status</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="subjectsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============================================================= -->
+      <!-- TAB: USER ACCOUNTS & RBAC (Admin Only)                        -->
+      <!-- ============================================================= -->
+      <section id="tabViewUsers" class="tab-pane hidden" aria-labelledby="usersHeading">
+        <div class="view-header">
+          <div>
+            <h2 id="usersHeading" class="view-title">User Accounts & Role Permissions</h2>
+            <p class="view-desc">Audit registered users, credentials, role access levels, and associated student IDs.</p>
+          </div>
+        </div>
+
+        <div class="table-container liquid-panel">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Username</th>
+                <th>Role Tier</th>
+                <th>Linked Student Profile</th>
+                <th>Access Scope</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============================================================= -->
+      <!-- TAB: ATTENDANCE TRACKER                                       -->
+      <!-- ============================================================= -->
+      <section id="tabViewAttendance" class="tab-pane hidden" aria-labelledby="attendanceHeading">
+        <div class="view-header">
+          <div>
+            <h2 id="attendanceHeading" class="view-title">Daily Attendance Workstation</h2>
+            <p class="view-desc">Select a calendar date, set student statuses, and save records in bulk.</p>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="btn-gradient-pill" id="saveAttendanceBtn" onclick="submitBulkAttendance()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
+              <span>Save Changes</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Attendance Toolbar Strip -->
+        <div class="attendance-toolbar liquid-panel">
+          <div class="date-selector-group">
+            <label for="attendanceDatePicker" class="date-label">Session Date:</label>
+            <div class="input-wrapper date-picker-wrap">
+              <input 
+                type="date" 
+                id="attendanceDatePicker" 
+                class="form-input date-input" 
+                onchange="handleAttendanceDateChange(this.value)"
+              />
+            </div>
+            <button type="button" class="btn-secondary-glass btn-sm" onclick="setAttendanceToday()">Today</button>
+          </div>
+
+          <div class="bulk-toggles">
+            <button type="button" class="btn-segmented-quick btn-quick-present" onclick="markAllAttendance('Present')">
+              <span class="status-indicator-dot dot-present"></span>
+              Mark All Present
+            </button>
+            <button type="button" class="btn-segmented-quick btn-quick-absent" onclick="markAllAttendance('Absent')">
+              <span class="status-indicator-dot dot-absent"></span>
+              Mark All Absent
+            </button>
+          </div>
+        </div>
+
+        <!-- Attendance Summary Ribbon -->
+        <div class="attendance-summary-strip liquid-panel">
+          <div class="summary-pill">
+            <span class="status-indicator-dot dot-present"></span>
+            <span>Present: <strong id="attSummaryPresent" class="tabular-nums">0</strong></span>
+          </div>
+          <div class="summary-pill">
+            <span class="status-indicator-dot dot-late"></span>
+            <span>Late: <strong id="attSummaryLate" class="tabular-nums">0</strong></span>
+          </div>
+          <div class="summary-pill">
+            <span class="status-indicator-dot dot-absent"></span>
+            <span>Absent: <strong id="attSummaryAbsent" class="tabular-nums">0</strong></span>
+          </div>
+          <div class="summary-pill ml-auto">
+            <span>Daily Presence: <strong id="attSummaryPct" class="tabular-nums">0%</strong></span>
+          </div>
+        </div>
+
+        <!-- Attendance Table -->
+        <div class="table-container liquid-panel">
+          <table class="data-table" aria-label="Daily Attendance Roster Table">
+            <thead>
+              <tr>
+                <th scope="col">Roll Number</th>
+                <th scope="col">Student Name</th>
+                <th scope="col">Class</th>
+                <th scope="col" class="text-right">Attendance Status</th>
+              </tr>
+            </thead>
+            <tbody id="attendanceTableBody"></tbody>
+          </table>
+
+          <div id="attendanceEmptyState" class="empty-state-box hidden">
+            <h4 class="empty-state-title">No Students Registered</h4>
+            <p class="empty-state-desc">You need to enroll students before recording attendance.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================= -->
+      <!-- TAB: GRADES & EXAMS (Faculty Teacher & Admin)                 -->
+      <!-- ============================================================= -->
+      <section id="tabViewGrades" class="tab-pane hidden" aria-labelledby="gradesHeading">
+        <div class="view-header">
+          <div>
+            <h2 id="gradesHeading" class="view-title">Academic Grades & Assessments</h2>
+            <p class="view-desc">Record exam scores, provide qualitative faculty feedback, and track student mastery.</p>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="btn-gradient-pill" onclick="openAddGradeModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Record Grade</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Grade Filter Strip -->
+        <div class="filter-strip liquid-panel">
+          <div class="select-wrapper">
+            <label for="gradeStudentFilter" class="filter-label">Filter by Student:</label>
+            <select id="gradeStudentFilter" class="form-select" onchange="handleGradeStudentFilter(this.value)">
+              <option value="">All Students</option>
+            </select>
+          </div>
+
+          <div class="grades-metrics-inline">
+            <span class="metric-chip">Total Records: <strong id="gradesTotalCount" class="tabular-nums">0</strong></span>
+            <span class="metric-chip">Average Score: <strong id="gradesAvgScore" class="tabular-nums">0.0%</strong></span>
+          </div>
+        </div>
+
+        <!-- Grades Table -->
+        <div class="table-container liquid-panel">
+          <table class="data-table" aria-label="Student Grades Table">
+            <thead>
+              <tr>
+                <th scope="col">Student</th>
+                <th scope="col">Subject</th>
+                <th scope="col">Assessment / Exam</th>
+                <th scope="col">Marks / Max</th>
+                <th scope="col">Faculty Remarks</th>
+                <th scope="col" style="min-width: 170px;">Score & Progress</th>
+                <th scope="col" class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="gradesTableBody"></tbody>
+          </table>
+
+          <div id="gradesEmptyState" class="empty-state-box hidden">
+            <h4 class="empty-state-title">No Grades Found</h4>
+            <p class="empty-state-desc" id="gradesEmptyDesc">No assessment scores recorded for this selection.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================= -->
+      <!-- TAB: ABSENCE NOTES REVIEW (Teacher & Admin)                   -->
+      <!-- ============================================================= -->
+      <section id="tabViewLeaveReview" class="tab-pane hidden" aria-labelledby="leaveReviewHeading">
+        <div class="view-header">
+          <div>
+            <h2 id="leaveReviewHeading" class="view-title">Absence Notes & Leave Review</h2>
+            <p class="view-desc">Review student-submitted medical and absence excuses; approve or decline.</p>
+          </div>
+        </div>
+
+        <div class="table-container liquid-panel">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Class</th>
+                <th>Absence Date</th>
+                <th>Reason / Excuse</th>
+                <th>Status</th>
+                <th>Reviewed By</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="leaveReviewTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============================================================= -->
+      <!-- TAB: SETUP & ARCHITECTURE GUIDE (Admin Only)                  -->
+      <!-- ============================================================= -->
+      <section id="tabViewSetup" class="tab-pane hidden" aria-labelledby="setupHeading">
+        <div class="view-header">
+          <div>
+            <h2 id="setupHeading" class="view-title">System Architecture & Setup</h2>
+            <p class="view-desc">Execution commands, schema structure, and environment variables.</p>
+          </div>
+        </div>
+
+        <div class="setup-grid">
+          <div class="liquid-panel setup-panel" data-tilt-panel>
+            <div class="setup-card-header">
+              <div class="step-num">1</div>
+              <h3 class="setup-heading">Quick Setup & Execution</h3>
+            </div>
+            <p class="setup-p">Run these steps in your terminal to initialize and run the Flask backend with MySQL:</p>
+            <div class="code-block-wrap">
+              <div class="code-block-header">
+                <span>Terminal (Bash)</span>
+                <button type="button" class="copy-btn" onclick="copySetupCommands()">Copy</button>
+              </div>
+              <pre class="code-block" id="setupCommands"># 1. Install required dependencies
+pip install -r requirements.txt
+
+# 2. Import schema into your MySQL server
+mysql -u root -p &lt; schema.sql
+
+# 3. Launch Flask application
+python app.py</pre>
+            </div>
+            <div class="setup-note">
+              <strong>Environment Variables:</strong> Configure these optional parameters:
+              <ul class="env-list">
+                <li><code>DB_HOST</code>: Hostname (default: <code>localhost</code>)</li>
+                <li><code>DB_USER</code>: Database username (default: <code>root</code>)</li>
+                <li><code>DB_PASS</code>: Database password</li>
+                <li><code>DB_NAME</code>: Database name (default: <code>student_portal</code>)</li>
+                <li><code>SECRET_KEY</code>: Session encryption key</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="liquid-panel setup-panel" data-tilt-panel>
+            <div class="setup-card-header">
+              <div class="step-num">2</div>
+              <h3 class="setup-heading">Multi-Role Architecture</h3>
+            </div>
+            <p class="setup-p">The system implements 3 distinct personas with dedicated responsibilities:</p>
+            <div class="manifest-list">
+              <div class="manifest-item">
+                <span class="manifest-tag" style="background: rgba(147,51,234,0.3); color: #d8b4fe;">👑 Admin</span>
+                <span class="manifest-file">Institutional Admissions</span>
+                <span class="manifest-desc">Student admissions, curriculum subjects, user accounts, and system configuration.</span>
+              </div>
+              <div class="manifest-item">
+                <span class="manifest-tag" style="background: rgba(16,185,129,0.3); color: #6ee7b7;">🍎 Teacher</span>
+                <span class="manifest-file">Classroom & Gradebook</span>
+                <span class="manifest-desc">Daily attendance workstation, gradebook assessment, health alerts, and absence approvals.</span>
+              </div>
+              <div class="manifest-item">
+                <span class="manifest-tag" style="background: rgba(245,158,11,0.3); color: #fcd34d;">🎓 Student</span>
+                <span class="manifest-file">Academic Self-Service</span>
+                <span class="manifest-desc">Student ID badge, 75% exam eligibility gauge, official printable transcript, and absence notes.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODALS                                                            -->
+  <!-- ================================================================= -->
+
+  <!-- Modal: Add / Edit Student (Admin Only) -->
+  <div id="studentModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="studentModalTitle">
+    <div class="modal-card liquid-panel" data-tilt-panel>
+      <div class="modal-header">
+        <h3 id="studentModalTitle" class="modal-title">Enroll Student</h3>
+        <button type="button" class="modal-close-btn" onclick="closeStudentModal()" aria-label="Close Modal">✕</button>
+      </div>
+
+      <form id="studentForm" onsubmit="handleStudentFormSubmit(event)">
+        <input type="hidden" id="studentFormId" value="" />
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="studentRollNo" class="form-label">Roll Number <span class="required">*</span></label>
+            <input type="text" id="studentRollNo" class="form-input" placeholder="e.g. CS-2024-006" required />
+          </div>
+          <div class="form-group">
+            <label for="studentName" class="form-label">Full Name <span class="required">*</span></label>
+            <input type="text" id="studentName" class="form-input" placeholder="e.g. Maya Lin" required />
+          </div>
+          <div class="form-group">
+            <label for="studentClass" class="form-label">Class / Grade <span class="required">*</span></label>
+            <input type="text" id="studentClass" class="form-input" placeholder="e.g. Grade 11-A" required />
+          </div>
+          <div class="form-group">
+            <label for="studentEmail" class="form-label">Email Address <span class="required">*</span></label>
+            <input type="email" id="studentEmail" class="form-input" placeholder="e.g. maya.lin@academy.edu" required />
+          </div>
+          <div class="form-group">
+            <label for="studentPhone" class="form-label">Phone Number</label>
+            <input type="tel" id="studentPhone" class="form-input" placeholder="e.g. +1 (555) 789-0123" />
+          </div>
+          <div class="form-group">
+            <label for="studentDob" class="form-label">Date of Birth</label>
+            <input type="date" id="studentDob" class="form-input" />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary-glass" onclick="closeStudentModal()">Cancel</button>
+          <button type="submit" id="studentFormSubmitBtn" class="btn-gradient-pill">
+            <span id="studentSubmitLabel">Save Student</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Record Grade (Teacher & Admin) -->
+  <div id="gradeModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="gradeModalTitle">
+    <div class="modal-card liquid-panel" data-tilt-panel>
+      <div class="modal-header">
+        <h3 id="gradeModalTitle" class="modal-title">Record Assessment Grade</h3>
+        <button type="button" class="modal-close-btn" onclick="closeGradeModal()" aria-label="Close Modal">✕</button>
+      </div>
+
+      <form id="gradeForm" onsubmit="handleGradeFormSubmit(event)">
+        <div class="form-group">
+          <label for="gradeFormStudent" class="form-label">Select Student <span class="required">*</span></label>
+          <select id="gradeFormStudent" class="form-select" required>
+            <option value="">-- Choose Student --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="gradeFormSubject" class="form-label">Subject <span class="required">*</span></label>
+          <select id="gradeFormSubject" class="form-select" required>
+            <option value="">-- Choose Subject --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="gradeFormExam" class="form-label">Assessment / Exam Name <span class="required">*</span></label>
+          <input type="text" id="gradeFormExam" class="form-input" placeholder="e.g. Midterm Exam, Quiz 1, Final Project" required />
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="gradeFormMarks" class="form-label">Marks Scored <span class="required">*</span></label>
+            <input type="number" id="gradeFormMarks" class="form-input" placeholder="e.g. 92.5" step="0.1" min="0" required />
+          </div>
+          <div class="form-group">
+            <label for="gradeFormMaxMarks" class="form-label">Max Marks</label>
+            <input type="number" id="gradeFormMaxMarks" class="form-input" value="100" step="0.1" min="1" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="gradeFormRemarks" class="form-label">Teacher Remarks & Feedback</label>
+          <input type="text" id="gradeFormRemarks" class="form-input" placeholder="e.g. Excellent critical thinking and clear step proofs" />
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary-glass" onclick="closeGradeModal()">Cancel</button>
+          <button type="submit" class="btn-gradient-pill">Save Evaluation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Subject (Admin Only) -->
+  <div id="subjectModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="subjectModalTitle">
+    <div class="modal-card modal-card-sm liquid-panel" data-tilt-panel>
+      <div class="modal-header">
+        <h3 id="subjectModalTitle" class="modal-title">Add Course to Curriculum</h3>
+        <button type="button" class="modal-close-btn" onclick="closeSubjectModal()" aria-label="Close Modal">✕</button>
+      </div>
+
+      <form id="subjectForm" onsubmit="handleSubjectFormSubmit(event)">
+        <div class="form-group">
+          <label for="subjectNameInput" class="form-label">Subject / Course Name <span class="required">*</span></label>
+          <input type="text" id="subjectNameInput" class="form-input" placeholder="e.g. Physics, History, Art & Design" required />
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary-glass" onclick="closeSubjectModal()">Cancel</button>
+          <button type="submit" class="btn-gradient-pill">Add Course</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Delete Confirmation -->
+  <div id="deleteModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+    <div class="modal-card modal-card-sm liquid-panel" data-tilt-panel>
+      <div class="modal-header">
+        <h3 id="deleteModalTitle" class="modal-title">Confirm Deletion</h3>
+        <button type="button" class="modal-close-btn" onclick="closeDeleteModal()" aria-label="Close Modal">✕</button>
+      </div>
+      <div class="modal-body-p">
+        <p id="deleteModalMessage">Are you sure you want to delete this record? This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary-glass" onclick="closeDeleteModal()">Cancel</button>
+        <button type="button" id="confirmDeleteBtn" class="btn-danger-pill" onclick="executeDelete()">Delete Record</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vanilla JavaScript Logic -->
+  <script src="/static/app.js"></script>
+</body>
+</html>
